@@ -1,0 +1,13 @@
+*.bin
+*.html
+*.asv
+.DS_Store
+*.avi
+*.mp4
+*.pyc
+*.mat
+*.npy
+**.nc
+**.cdf
+**.ncdf
+**/__pycache__/
