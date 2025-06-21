@@ -1,0 +1,17 @@
+#!/bin/bash
+
+module purge
+module load ncarenv/23.09 intel/2023.2.1 intel-mpi/2021.10.0
+module list 
+
+rm -f *.o
+rm -f *.f
+make CLEAN
+rm Makefile
+
+/glade/work/edavenport/MITgcm/tools/genmake2 "-mpi" "-mods" "../code_ad" "-optfile" "/glade/u/home/edavenport/derecho_opt_apr25" "-adof" "/glade/work/edavenport/MITgcm/tools/adjoint_options/adjoint_default" -rootdir=/glade/work/edavenport/MITgcm
+
+make depend
+make adtaf
+make adall
+
