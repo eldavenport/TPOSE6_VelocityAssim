@@ -15,6 +15,69 @@ except ImportError:
 from xmitgcm import open_mdsdataset
 
 
+# Known units for MITgcm control variables
+CONTROL_VARIABLE_UNITS = {
+    # Ocean velocities
+    'xx_uvel': 'm/s',
+    'xx_vvel': 'm/s',
+    'adxx_uvel': 'm/s',
+    'adxx_vvel': 'm/s',
+    
+    # Wind velocities
+    'xx_uwind': 'm/s',
+    'xx_vwind': 'm/s', 
+    'adxx_uwind': 'm/s',
+    'adxx_vwind': 'm/s',
+    
+    # Temperature
+    'xx_theta': 'deg C',
+    'xx_atemp': 'K',
+    'adxx_theta': 'deg C',
+    'adxx_atemp': 'K',
+    
+    # Salinity
+    'xx_salt': 'psu',
+    'adxx_salt': 'psu',
+    
+    # Specific humidity
+    'xx_aqh': 'kg/kg',
+    'adxx_aqh': 'kg/kg',
+    
+    # Radiation
+    'xx_lwdown': 'W/m^2',
+    'xx_swdown': 'W/m^2',
+    'adxx_lwdown': 'W/m^2',
+    'adxx_swdown': 'W/m^2',
+    
+    # Precipitation
+    'xx_precip': 'm/s',
+    'adxx_precip': 'm/s'
+}
+
+
+def _get_variable_units(var_name):
+    """
+    Get the units for a control variable, including effective versions.
+    
+    Parameters
+    ----------
+    var_name : str
+        Variable name (e.g., 'xx_theta', 'adxx_salt.effective')
+        
+    Returns
+    -------
+    str
+        Units string, or 'unknown' if not found
+    """
+    # For .effective variables, look up the base variable units
+    # but keep the original name intact
+    if '.effective' in var_name:
+        base_name = var_name.replace('.effective', '')
+        return CONTROL_VARIABLE_UNITS.get(base_name, 'unknown')
+    else:
+        return CONTROL_VARIABLE_UNITS.get(var_name, 'unknown')
+
+
 def load_controls_and_sensitivities(data_dir, grid_dir, iteration, 
                                     control_vars=None, sensitivity_vars=None, 
                                     effective_vars=None, load_grid_ds=True):
@@ -50,11 +113,11 @@ def load_controls_and_sensitivities(data_dir, grid_dir, iteration,
     # Default variable lists
     if control_vars is None:
         control_vars = ['xx_theta', 'xx_salt', 'xx_uwind', 'xx_vwind', 
-                       'xx_atemp', 'xx_aqh', 'xx_lwdown', 'xx_precip', 'xx_swdown']
+                       'xx_atemp', 'xx_aqh', 'xx_lwdown', 'xx_precip', 'xx_swdown','xx_vvel','xx_uvel']
     
     if sensitivity_vars is None:
         sensitivity_vars = ['adxx_theta', 'adxx_salt', 'adxx_uwind', 'adxx_vwind',
-                           'adxx_atemp', 'adxx_aqh', 'adxx_lwdown', 'adxx_precip', 'adxx_swdown']
+                           'adxx_atemp', 'adxx_aqh', 'adxx_lwdown', 'adxx_precip', 'adxx_swdown','adxx_vvel','adxx_uvel']
     
     if effective_vars is None:
         effective_vars = [var + '.effective' for var in control_vars]
@@ -338,7 +401,7 @@ def _create_dataarray_from_rdmds(data, meta, var_name, grid_ds=None):
         coords=coords,
         name=var_name,
         attrs={
-            'units': 'unknown',
+            'units': _get_variable_units(var_name),
             'long_name': var_name,
             'source': 'MITgcm rdmds',
             'dataprec': meta.get('dataprec', ['unknown'])[0],
